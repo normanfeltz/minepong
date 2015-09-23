@@ -69,7 +69,7 @@ func SendHandshake(conn net.Conn, host string) error {
 	// server address
 	host, port, err := net.SplitHostPort(host)
 	if err != nil {
-		panic(err)
+		return errors.New("cannot split host and port")
 	}
 
 	pl.Write(encodeVarint(uint64(len(host))))
@@ -78,7 +78,7 @@ func SendHandshake(conn net.Conn, host string) error {
 	// server port
 	iPort, err := strconv.Atoi(port)
 	if err != nil {
-		panic(err)
+		return errors.New("cannot convert port to int")
 	}
 	binary.Write(pl, binary.BigEndian, int16(iPort))
 
