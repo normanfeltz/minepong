@@ -9,10 +9,15 @@ import (
 	"io"
 	"net"
 	"strconv"
+	"time"
 )
 
 const (
 	protocolVersion = 0x47
+)
+
+var (
+	connectionTimeout = 2 * time.Second
 )
 
 type Pong struct {
@@ -25,11 +30,38 @@ type Pong struct {
 		Online int `json:"online"`
 		Sample []map[string]string
 	} `json:"players"`
-	Description interface{} `json:"description"`
-	FavIcon     string      `json:"favicon"`
+	Description  interface{} `json:"description"`
+	FavIcon      string      `json:"favicon"`
+	ResolvedHost string      `json:"resolved_host"`
 }
 
-func Ping(conn net.Conn, host string) (*Pong, error) {
+func resolveSRV(addr string) (host string, err error) {
+	h, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		h = addr
+	}
+
+	_, addrs, err := net.LookupSRV("minecraft", "tcp", h)
+	if err != nil || len(addrs) == 0 {
+		return host, errors.New("unable to find SRV record")
+	}
+
+	return net.JoinHostPort(addrs[0].Target, strconv.Itoa(int(addrs[0].Port))), nil
+}
+
+func Ping(host string) (*Pong, error) {
+	srvHost, err := resolveSRV(host)
+
+	if err == nil {
+		host = srvHost
+	}
+
+	conn, err := net.DialTimeout("tcp", host, connectionTimeout)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
 	if err := SendHandshake(conn, host); err != nil {
 		return nil, err
 	}
@@ -42,6 +74,8 @@ func Ping(conn net.Conn, host string) (*Pong, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	pong.ResolvedHost = host
 
 	return pong, nil
 }

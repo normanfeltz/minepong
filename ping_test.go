@@ -2,42 +2,14 @@ package minepong
 
 import (
 	"fmt"
-	"net"
 	"sync"
 	"testing"
 )
 
-var testServers = map[string]string{
-	"desteria": "Play.NirvanaMC.com:25565",
-	"gotpvp":   "play.gotpvp.com:25565",
-}
-
-type server struct {
-	name string
-	host string
-
-	conn net.Conn
-}
-
-func newServer(name string, host string) *server {
-	return &server{
-		name: name,
-		host: host,
-	}
-}
-
-func (s *server) connect() error {
-	var err error
-	s.conn, err = net.Dial("tcp", s.host)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *server) disconnect() error {
-	return s.conn.Close()
+var testServers = map[string][]string{
+	"desteria": {"Play.NirvanaMC.com:25565", "Play.NirvanaMC.com:25565"},
+	"gotpvp":   {"play.gotpvp.com:25565", "283hd134d142d7h2.ddns.net.:25565"},
+	"SRV-PVP":  {"ping.minecraft.syfaro.net", "play.gotpvp.com.:25565"},
 }
 
 func TestPing(t *testing.T) {
@@ -46,25 +18,22 @@ func TestPing(t *testing.T) {
 	for name, host := range testServers {
 		wg.Add(1)
 
-		go func(name string, host string) {
-			fmt.Println("started")
+		go func(name string, data []string) {
+			fmt.Printf("Checking %s: %s\n", name, data[0])
+			defer wg.Done()
 
-			svr := newServer(name, host)
-			if err := svr.connect(); err != nil {
-				panic(err)
-			}
-
-			fmt.Println("connected: " + svr.name)
-
-			pong, err := Ping(svr.conn, svr.host)
+			pong, err := Ping(data[0])
 			if err != nil {
 				fmt.Println(err)
 				return
 			}
 
-			fmt.Println(svr.name, pong.Players.Online, pong.Players.Max)
+			if pong.ResolvedHost != data[1] {
+				t.Errorf("SRV lookup did not complete, got %s, expected %s\n", pong.ResolvedHost, data[1])
+				t.Fail()
+			}
 
-			wg.Done()
+			fmt.Printf("Got %s: %d/%d\n", name, pong.Players.Online, pong.Players.Max)
 		}(name, host)
 	}
 
