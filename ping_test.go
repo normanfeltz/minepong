@@ -7,9 +7,8 @@ import (
 )
 
 var testServers = map[string][]string{
-	"desteria": {"Play.NirvanaMC.com:25565", "Play.NirvanaMC.com:25565"},
-	"gotpvp":   {"play.gotpvp.com:25565", "283hd134d142d7h2.ddns.net.:25565"},
-	"SRV-PVP":  {"ping.minecraft.syfaro.net", "play.gotpvp.com.:25565"},
+	"desteria":  {"Play.NirvanaMC.com:25565", "nmctemporary.ddns.net.:25564"},
+	"skybounds": {"play.skybounds.com:25565", "ns105195.ip-147-135-69.us.:25565"},
 }
 
 func TestPing(t *testing.T) {
@@ -25,6 +24,7 @@ func TestPing(t *testing.T) {
 			pong, err := Ping(data[0])
 			if err != nil {
 				fmt.Println(err)
+				t.Fail()
 				return
 			}
 

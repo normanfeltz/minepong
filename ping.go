@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	protocolVersion = 0x47
+	protocolVersion = 573
 )
 
 var (
@@ -98,7 +98,7 @@ func SendHandshake(conn net.Conn, host string) error {
 	pl.WriteByte(0x00)
 
 	// protocol version
-	pl.WriteByte(protocolVersion)
+	pl.Write(encodeVarint(uint64(protocolVersion)))
 
 	// server address
 	host, port, err := net.SplitHostPort(host)
