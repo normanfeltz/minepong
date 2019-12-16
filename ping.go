@@ -62,6 +62,9 @@ func Ping(host string) (*Pong, error) {
 	}
 	defer conn.Close()
 
+	conn.SetReadDeadline(time.Now().Add(connectionTimeout))
+	conn.SetWriteDeadline(time.Now().Add(connectionTimeout))
+
 	if err := SendHandshake(conn, host); err != nil {
 		return nil, err
 	}

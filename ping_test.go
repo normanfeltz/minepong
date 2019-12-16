@@ -8,7 +8,7 @@ import (
 
 var testServers = map[string][]string{
 	"desteria":  {"Play.NirvanaMC.com:25565", "nmctemporary.ddns.net.:25564"},
-	"skybounds": {"play.skybounds.com:25565", "ns105195.ip-147-135-69.us.:25565"},
+	"skybounds": {"play.skybounds.com:25565", "ns105643.ip-147-135-70.us.:25565"},
 }
 
 func TestPing(t *testing.T) {
