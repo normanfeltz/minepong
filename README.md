@@ -8,7 +8,7 @@ The `minepong.Ping` method takes care of resolving SRV records, connecting to
 the server, and retrieving data.
 
 ```go
-pong, err := Ping(host)
+pong, err := minepong.Ping(host)
 if err != nil {
     fmt.Println(err)
     return
